@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include "./chip8.h"
 
 // openGL
@@ -89,7 +90,7 @@ int main(int argc, char* argv[]) {
                 // Set index register I to NNN
                 chip8.I = EXTRACT_NNN(opcode);
                 break;
-            case 0xD000:
+            case 0xD000: {
                 // draw sprite at coordinate (VX, VY) with N bytes of sprite data starting at the address stored in I
 
                 // extract x, y, and n
@@ -139,9 +140,10 @@ int main(int argc, char* argv[]) {
                 }
                 break;
 
-            default:
-                // breaks if operation unknown
-                break;
+                default:
+                    // breaks if operation unknown
+                    break;
+            }
         }
 
         glClear(GL_COLOR_BUFFER_BIT);

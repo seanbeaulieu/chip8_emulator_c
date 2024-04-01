@@ -45,7 +45,6 @@ typedef struct Chip8 {
 } Chip8;
 
 // stack functions
-void chip8_init(Chip8* chip8);
 void chip8_push(Chip8* chip8, uint16_t value);
 uint16_t chip8_pop(Chip8* chip8);
 
