@@ -115,16 +115,16 @@ int main(int argc, char* argv[]) {
                         // get the current screen pixel
                         // initialize as a pointer to the memory address of the coordinates of the screen given
                         // by the sprite starting position, offset by the row and column
-                        uint32_t* screen_pixel = &chip8.display[y + row][x + col];
+                        uint8_t* screen_pixel = &chip8.display[y + row][x + col];
 
                         // check to see if the sprite pixel is on
                         if (sprite_pixel) {
                             // then, if the associated screen pixel is also on, set the VF register to 1
-                            if (*screen_pixel == 0xFFFFFFFF) {
+                            if (*screen_pixel == 0xFF) {
                                 chip8.V[0xF] = 1;
                             }
                             // otherwise, set the screen pixel on
-                            *screen_pixel ^= 0xFFFFFFFF;
+                            *screen_pixel ^= 0xFF;
                         }
 
                         // hitting the right edge of the screen will stop drawing the current row

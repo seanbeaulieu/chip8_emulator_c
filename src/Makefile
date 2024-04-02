@@ -1,7 +1,7 @@
 # Compiler and flags
 CC = gcc
 CFLAGS = -Wall -Wextra -I.
-LDFLAGS = -Lusr/local/lib -lglfw -lGL -lx11 -lXrandr -lXinerama -lXcursor -lXi
+LDFLAGS = -lglfw3 -lGL -lX11 -lXrandr -lXinerama -lXcursor -lXi -ldl -lm -pthread
 
 # Source files and object files
 SRCS = main.c chip8.c
