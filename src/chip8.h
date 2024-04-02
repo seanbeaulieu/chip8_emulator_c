@@ -54,3 +54,6 @@ void chip8_init_memory(Chip8* chip8);
 void chip8_init_registers(Chip8* chip8);
 void chip8_load_font(Chip8* chip8);
 void load_rom(Chip8* chip8, const char* filename);
+
+// testing
+void print_display(Chip8* chip8);

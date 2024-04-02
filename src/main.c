@@ -31,14 +31,14 @@ int main(int argc, char* argv[]) {
 
     // initialize glfw
     if (!glfwInit()) {
-        fprintf(stderr, "Failed to initialize GLFW\n");
+        fprintf(stderr, "failed to initialize GLFW\n");
         return 1;
     }
 
     // create glfw window
     GLFWwindow* window = glfwCreateWindow(800, 600, "CHIP-8 Emulator", NULL, NULL);
     if (!window) {
-        fprintf(stderr, "Failed to create GLFW window\n");
+        fprintf(stderr, "failed to create GLFW window\n");
         glfwTerminate();
         return 1;
     }
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-
+    
 
     // emulation infinite loop
     while(!glfwWindowShouldClose(window)) {
@@ -121,28 +121,32 @@ int main(int argc, char* argv[]) {
                         if (sprite_pixel) {
                             // then, if the associated screen pixel is also on, set the VF register to 1
                             if (*screen_pixel == 0xFF) {
+                                *screen_pixel ^= 0x00;
                                 chip8.V[0xF] = 1;
                             }
                             // otherwise, set the screen pixel on
-                            *screen_pixel ^= 0xFF;
+                            else {
+                                *screen_pixel ^= 0xFF;
+                            }
                         }
 
                         // hitting the right edge of the screen will stop drawing the current row
                         if (x + col >= 64) {
                             break;
                         }
+
+                        // x++;
                     }
+
+                    // y++;
 
                     // reaching the bottom of the screen will stop
                     if (y + row >= 32) {
                         break;
                     }
+
                 }
                 break;
-
-                default:
-                    // breaks if operation unknown
-                    break;
             }
         }
 
@@ -159,7 +163,11 @@ int main(int argc, char* argv[]) {
         }
         glEnd();
         glfwSwapBuffers(window);
+
     }
+
+    // debug to print the screen in console.. wont hit right now
+    print_display(&chip8);
 
     // end glfw clean
     glfwTerminate();

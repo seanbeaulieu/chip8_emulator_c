@@ -104,3 +104,14 @@ uint16_t chip8_pop(Chip8* chip8) {
     chip8->top--;
     return chip8->stack[chip8->top];
 }
+
+// print display to terminal (for bug testing)
+void print_display(Chip8* chip8) {
+    for (int y = 0; y < 32; y++) {
+        for (int x = 0; x < 64; x++) {
+            printf("%d ", chip8->display[y][x] ? 1 : 0);
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
