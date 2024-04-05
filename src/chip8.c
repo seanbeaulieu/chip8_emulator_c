@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 // intialzies the passed in Chip8 struct
 void chip8_init(Chip8* chip8) {
@@ -20,6 +21,7 @@ void chip8_init_memory(Chip8* chip8) {
     for (int i = 0; i < 4096; i++) {
         chip8->memory[i] = 0;
     }
+    memset(chip8->display, 0x00000000, sizeof(chip8->display));
 }
 
 // initializing emulator registers

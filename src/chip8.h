@@ -40,7 +40,7 @@ typedef struct Chip8 {
     // 2d array of unsigned 8-bit int
     // 64 x 32
     // 1 is white, 0 is black
-    uint8_t display[64][32];
+    uint32_t display[32][64];
 
 } Chip8;
 

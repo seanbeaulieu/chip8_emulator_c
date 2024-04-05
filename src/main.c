@@ -61,6 +61,7 @@ int main(int argc, char* argv[]) {
 
         // fetch
         uint16_t opcode = FETCH_OPCODE();
+        // printf("opcode: %d", opcode);
         chip8.pc += 2;
 
         // decode and execute
@@ -70,7 +71,7 @@ int main(int argc, char* argv[]) {
                     case 0x00E0:
                         // clears the display by setting the display 2d array to 0
                         // sets the next display size bytes of the display memory block to zero
-                        memset(chip8.display, 0, sizeof(chip8.display));
+                        memset(chip8.display, 0x0, sizeof(chip8.display));
                         break;
                 }
                 break;
@@ -95,9 +96,12 @@ int main(int argc, char* argv[]) {
 
                 // extract x, y, and n
                 // modulo by 64 and 32 so position can wrap
-                uint8_t x = chip8.V[EXTRACT_X(opcode)] % 64;
-                uint8_t y = chip8.V[EXTRACT_Y(opcode)] % 32;
+                uint8_t x = chip8.V[EXTRACT_X(opcode)];
+                uint8_t y = chip8.V[EXTRACT_Y(opcode)];
                 uint8_t n = EXTRACT_N(opcode);
+
+                // printf("opcode: %d", opcode);
+                printf("x: %d, y: %d\n", x, y);
 
                 // set register vf to 0
                 chip8.V[0xF] = 0;
@@ -105,47 +109,66 @@ int main(int argc, char* argv[]) {
                 // loops through n rows
                 for (int row = 0; row < n; row++) {
                     // get the nth byte of sprite data from memory (starts at I)
+                    // printf("i: %d ", chip8.I);
                     uint8_t sprite_byte = chip8.memory[chip8.I + row];
+                    // int32_t row1 = (chip8.V[y] + n) % 32;
 
                     // loop through each 8 pixels of the sprite row
                     for (int col = 0; col < 8; col++) {
+
                         // get the current sprite pixel by shifting mask to the left by col, starts at most significant bit
-                        uint8_t sprite_pixel = sprite_byte & (0x80 >> col);
+
+                        // uint8_t sprite_pixel = ((sprite_byte & 0x80) >> col);
+                        // uint8_t sprite_pixel = (sprite_byte & 0x80) >> 7;
+                        // int32_t sprite_pixel = (sprite_byte & 0x80) >> col;
 
                         // get the current screen pixel
                         // initialize as a pointer to the memory address of the coordinates of the screen given
                         // by the sprite starting position, offset by the row and column
-                        uint8_t* screen_pixel = &chip8.display[y + row][x + col];
+                        uint32_t* screen_pixel = &chip8.display[(y + row) % 32][(x + col) % 64];
 
                         // check to see if the sprite pixel is on
-                        if (sprite_pixel) {
+                        if ((sprite_byte & (0x80 >> col))) {
                             // then, if the associated screen pixel is also on, set the VF register to 1
+                            // also turn the pixel off
                             if (*screen_pixel == 0xFF) {
-                                *screen_pixel ^= 0x00;
+                                *screen_pixel = 0x00;
                                 chip8.V[0xF] = 1;
                             }
                             // otherwise, set the screen pixel on
                             else {
-                                *screen_pixel ^= 0xFF;
+                                *screen_pixel = 0xFF;
                             }
                         }
 
                         // hitting the right edge of the screen will stop drawing the current row
-                        if (x + col >= 64) {
+                        /*
+                        if (x >= 64) {
+                            x = x % 64;
                             break;
                         }
+                        */
 
+                        // increment x
                         // x++;
+                        // printf("after increment x: %d, y: %d\n", x, y);
                     }
 
-                    // y++;
+                    
+                    // printf("x: %d, after increment y: %d\n", x, y);
 
                     // reaching the bottom of the screen will stop
-                    if (y + row >= 32) {
+                    /*
+                    if (y >= 32) {
+                        y = y % 32;
                         break;
                     }
+                    */
+
+                    //y++;
 
                 }
+
                 break;
             }
         }
@@ -157,7 +180,8 @@ int main(int argc, char* argv[]) {
         for (int y = 0; y < 32; y++) {
             for (int x = 0; x < 64; x++) {
                 if (chip8.display[y][x]) {
-                    glVertex2i(x * 10, y * 10);
+                    glVertex2i(x * 12, y * 12);
+                    // glVertex2i(x, y);
                 }
             }
         }
