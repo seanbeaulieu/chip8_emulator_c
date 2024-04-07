@@ -264,10 +264,11 @@ int main(int argc, char* argv[]) {
                             else chip8.V[0xF] = 0;
 
                             break;
+
                         // shift
                         // using old behavior here, where vx is set to vy first
                         case 0x0006:
-                            chip8.V[EXTRACT_X(opcode)] = chip8.V[EXTRACT_Y(opcode)];
+                            // chip8.V[EXTRACT_X(opcode)] = chip8.V[EXTRACT_Y(opcode)];
 
                             // set VF to the least significant bit of VX
                             carry = chip8.V[EXTRACT_X(opcode)] & 0x01;
@@ -278,7 +279,7 @@ int main(int argc, char* argv[]) {
                             break;
 
                         case 0x000E:
-                            chip8.V[EXTRACT_X(opcode)] = chip8.V[EXTRACT_Y(opcode)];
+                            // chip8.V[EXTRACT_X(opcode)] = chip8.V[EXTRACT_Y(opcode)];
 
                             // set VF to the most significant bit of VX
                             carry = (chip8.V[EXTRACT_X(opcode)] & 0x80) >> 7;
