@@ -8,6 +8,7 @@
 #include "./glfw3.h"
 
 // these allow us to grab the instructions from each fetch
+// can pull out each nibble from opcode
 #define FETCH_OPCODE() (chip8.memory[chip8.pc] << 8 | chip8.memory[chip8.pc + 1])
 #define EXTRACT_X(opcode) ((opcode & 0x0F00) >> 8)
 #define EXTRACT_Y(opcode) ((opcode & 0x00F0) >> 4)
@@ -18,6 +19,7 @@
 // define key array
 uint8_t keys[16] = {0};
 
+// call back function for key presses
 void key_callback(GLFWwindow* window, int key, int scancode, int action) {
     if (action == GLFW_PRESS || action == GLFW_RELEASE) {
         switch (key) {
@@ -61,6 +63,7 @@ int main(int argc, char* argv[]) {
     }
 
     // create glfw window
+    // this is set to 640x320 for now
     GLFWwindow* window = glfwCreateWindow(640, 320, "CHIP-8 Emulator", NULL, NULL);
     if (!window) {
         fprintf(stderr, "failed to create GLFW window\n");
@@ -68,7 +71,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // make current
+    // make context current for calling thread
     glfwMakeContextCurrent(window);
 
     // opengl intialization
@@ -83,6 +86,8 @@ int main(int argc, char* argv[]) {
     double prev_time = glfwGetTime();
     // 60hz frame rate
     const double frame_time = 1.0 / 60.0;
+
+    // 600 instructions per second
     const int cycles_per_frame = 10;
 
     // emulation infinite loop
@@ -95,6 +100,8 @@ int main(int argc, char* argv[]) {
         // temp variables for underflow and carry in arithmetic instructions
         int underflow;
         int carry;
+
+        // set to 1 if draw instruction is called
         int display_wait = 0;
 
         // decrement delay timer
@@ -107,15 +114,9 @@ int main(int argc, char* argv[]) {
 
             // fetch
             uint16_t opcode = FETCH_OPCODE();
-            // printf("opcode: %d", opcode);
+            
+            // increment program counter
             chip8.pc += 2;
-
-            /*
-            // decrement delay timer
-            if (chip8.delay_timer > 0) {
-                chip8.delay_timer--;
-            } 
-            */
 
             // decode and execute
             switch (opcode & 0xF000) {
@@ -134,6 +135,7 @@ int main(int argc, char* argv[]) {
                     break;
                     }
                     break;
+
                 // jump
                 case 0x1000:
                     // sets the program counter to the address given by NNN
@@ -161,23 +163,27 @@ int main(int argc, char* argv[]) {
                         chip8.pc += 2;
                     }
                     break;
+
                 // skip one instruction if VX == VY
                 case 0x5000:
                     if (chip8.V[EXTRACT_X(opcode)] == chip8.V[EXTRACT_Y(opcode)]) {
                         chip8.pc += 2;
                     }
                     break;
+
                 // skip one instruction if VX != VY
                 case 0x9000:
                     if (chip8.V[EXTRACT_X(opcode)] != chip8.V[EXTRACT_Y(opcode)]) {
                         chip8.pc += 2;
                     }
                     break;
+
                 // set vx
                 case 0x6000:
                     // sets the register vx to the value nn
                     chip8.V[EXTRACT_X(opcode)] = EXTRACT_NN(opcode);
                     break;
+
                 // add to vx
                 case 0x7000:
                     // adds nn to register vx
@@ -200,20 +206,22 @@ int main(int argc, char* argv[]) {
                             chip8.V[EXTRACT_X(opcode)] = chip8.V[EXTRACT_X(opcode)] | chip8.V[EXTRACT_Y(opcode)];
                             chip8.V[0xF] = 0;
                             break;
+
                         // binary and
                         case 0x0002:
                             // vx is set to vx & vy
                             chip8.V[EXTRACT_X(opcode)] = chip8.V[EXTRACT_X(opcode)] & chip8.V[EXTRACT_Y(opcode)];
                             chip8.V[0xF] = 0;
                             break;
+
                         // logical xor
                         case 0x0003:
                             // vx is set to vx ^ vy
                             chip8.V[EXTRACT_X(opcode)] = chip8.V[EXTRACT_X(opcode)] ^ chip8.V[EXTRACT_Y(opcode)];
                             chip8.V[0xF] = 0;
                             break;
+
                         case 0x0004:
-                        
                             // if vy + vx is > 255, then vf set to 1
                             if (chip8.V[EXTRACT_X(opcode)] + chip8.V[EXTRACT_Y(opcode)] > 255) {
                                 underflow = 1;
@@ -229,6 +237,7 @@ int main(int argc, char* argv[]) {
                             else chip8.V[0xF] = 0;
 
                             break;
+
                         // subtract
                         case 0x0005:
                             // if vx is larger than vy, then vf is set to 1, else vf is set to 0
@@ -247,6 +256,7 @@ int main(int argc, char* argv[]) {
                             else chip8.V[0xF] = 0;
 
                             break;
+
                         // subtract
                         case 0x0007:
                             
@@ -268,7 +278,6 @@ int main(int argc, char* argv[]) {
                         // shift
                         // using old behavior here, where vx is set to vy first
                         case 0x0006:
-                            // chip8.V[EXTRACT_X(opcode)] = chip8.V[EXTRACT_Y(opcode)];
 
                             // set VF to the least significant bit of VX
                             carry = chip8.V[EXTRACT_X(opcode)] & 0x01;
@@ -278,8 +287,7 @@ int main(int argc, char* argv[]) {
                             chip8.V[0xF] = carry;
                             break;
 
-                        case 0x000E:
-                            // chip8.V[EXTRACT_X(opcode)] = chip8.V[EXTRACT_Y(opcode)];
+                        case 0x000E:                            
 
                             // set VF to the most significant bit of VX
                             carry = (chip8.V[EXTRACT_X(opcode)] & 0x80) >> 7;
@@ -355,17 +363,12 @@ int main(int argc, char* argv[]) {
                             }
 
                             // hitting the right edge of the screen will stop drawing the current row
-                            
                             if (x + col >= 64) {
                                 break;
-                            }
-                            
-                            
+                            }                            
                         }
     
-                        // printf("x: %d, after increment y: %d\n", x, y);
                         // reaching the bottom of the screen will stop
-                        
                         if (y + row >= 32) {
                             break;
                         }
@@ -373,6 +376,7 @@ int main(int argc, char* argv[]) {
                     }
                     break;
                 }
+
                 // skip if key
                 case 0xE000:
                     switch (opcode & 0x00FF) {
@@ -422,12 +426,12 @@ int main(int argc, char* argv[]) {
                             ;
                             chip8.pc -= 2;
                             while (1) {
-                                // Check if any key is pressed
+                                // check if any key is pressed
                                 for (int i = 0; i < 16; i++) {
                                     if (keys[i]) {
-                                        // Wait for the key to be released
+                                        // wait for the key to be released
                                         while (keys[i]) {
-                                            // Update the delay and sound timers
+                                            // update the delay and sound timers
                                             if (chip8.delay_timer > 0) {
                                                 chip8.delay_timer--;
                                             }
@@ -435,18 +439,18 @@ int main(int argc, char* argv[]) {
                                                 chip8.sound_timer--;
                                             }
 
-                                            // Yield the CPU to allow other events to be processed
-                                            glfwWaitEventsTimeout(0.016); // Approximately 60Hz
+                                            // yield the CPU to allow other events to be processed
+                                            glfwWaitEventsTimeout(0.016); // approximately 60hz
                                         }
 
-                                        // Store the key value in the register and resume execution
+                                        // store the key value in the register and resume execution
                                         chip8.V[EXTRACT_X(opcode)] = i;
                                         chip8.pc += 2;
                                         break;
                                     }
                                 }
 
-                                // If no key is pressed, update the timers and yield the CPU
+                                // if no key is pressed, update the timers and yield the CPU
                                 if (chip8.pc == opcode - 2) {
                                     if (chip8.delay_timer > 0) {
                                         chip8.delay_timer--;
@@ -511,12 +515,6 @@ int main(int argc, char* argv[]) {
 
             // implement display wait quirk
             // break the cycle per frame loop after a draw
-            /*
-            if (opcode & 0xD000) {
-                break;
-            }
-            */
-
             if (display_wait) {
                 break;
             }

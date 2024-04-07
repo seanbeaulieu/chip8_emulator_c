@@ -94,7 +94,6 @@ void load_rom(Chip8* chip8, const char* filename) {
 // stack push function
 void chip8_push(Chip8* chip8, uint16_t value) {
     // can do stack check here
-
     chip8->stack[chip8->top] = value;
     chip8->top++;
 }
@@ -102,7 +101,6 @@ void chip8_push(Chip8* chip8, uint16_t value) {
 // stack pop function
 uint16_t chip8_pop(Chip8* chip8) {
     // can do stack check here
-
     chip8->top--;
     return chip8->stack[chip8->top];
 }

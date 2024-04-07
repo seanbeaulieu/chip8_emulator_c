@@ -1,4 +1,3 @@
-
 #define CHIP8_H
 #include <stdint.h>
 
