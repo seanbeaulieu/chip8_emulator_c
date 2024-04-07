@@ -83,6 +83,7 @@ int main(int argc, char* argv[]) {
     double prev_time = glfwGetTime();
     // 60hz frame rate
     const double frame_time = 1.0 / 60.0;
+    const int cycles_per_frame = 2;
 
     // emulation infinite loop
     while(!glfwWindowShouldClose(window)) {
@@ -94,6 +95,8 @@ int main(int argc, char* argv[]) {
         // temp variables for underflow and carry in arithmetic instructions
         int underflow;
         int carry;
+
+        for (int i = 0; i < cycles_per_frame; i++) {
 
         // fetch
         uint16_t opcode = FETCH_OPCODE();
@@ -180,20 +183,25 @@ int main(int argc, char* argv[]) {
                         // set VX to VY
                         chip8.V[EXTRACT_X(opcode)] = chip8.V[EXTRACT_Y(opcode)];
                         break;
+
+                    // ON ORIGINAL CHIP-8, OR, AND, XOR SET VF TO 0 
                     // binary or
                     case 0x0001:
                         // vx is set to vx | vy
                         chip8.V[EXTRACT_X(opcode)] = chip8.V[EXTRACT_X(opcode)] | chip8.V[EXTRACT_Y(opcode)];
+                        chip8.V[0xF] = 0;
                         break;
                     // binary and
                     case 0x0002:
                         // vx is set to vx & vy
                         chip8.V[EXTRACT_X(opcode)] = chip8.V[EXTRACT_X(opcode)] & chip8.V[EXTRACT_Y(opcode)];
+                        chip8.V[0xF] = 0;
                         break;
                     // logical xor
                     case 0x0003:
                         // vx is set to vx ^ vy
                         chip8.V[EXTRACT_X(opcode)] = chip8.V[EXTRACT_X(opcode)] ^ chip8.V[EXTRACT_Y(opcode)];
+                        chip8.V[0xF] = 0;
                         break;
                     case 0x0004:
                     
@@ -299,9 +307,6 @@ int main(int argc, char* argv[]) {
                 uint8_t y = chip8.V[EXTRACT_Y(opcode)];
                 uint8_t n = EXTRACT_N(opcode);
 
-                // printf("opcode: %d", opcode);
-                // printf("x: %d, y: %d\n", x, y);
-
                 // set register vf to 0
                 chip8.V[0xF] = 0;
 
@@ -332,19 +337,21 @@ int main(int argc, char* argv[]) {
                         }
 
                         // hitting the right edge of the screen will stop drawing the current row
-                        
+                        /* 
                         if (x + col >= 64) {
                             break;
                         }
+                        */
                         
                     }
  
                     // printf("x: %d, after increment y: %d\n", x, y);
                     // reaching the bottom of the screen will stop
-                    
+                    /*
                     if (y + row >= 32) {
                         break;
                     }
+                    */
                 }
                 break;
             }
@@ -458,6 +465,9 @@ int main(int argc, char* argv[]) {
 
                     // store and load memory
                     // use a temp value for indexing
+
+                    // OLD BEHAVIOR INCREMENTS I
+                    // will not implement here for sake of testing roms
                     case 0x0055:
                         // from registers v0 to vx (get x)
                         // the values of them will be stored in
@@ -466,7 +476,7 @@ int main(int argc, char* argv[]) {
                             chip8.memory[chip8.I + i] = chip8.V[i];
                         }
                         break;
-                    case 0x0065: 
+                    case 0x0065:
                         // from memory address I, store the 
                         // values in those addresses into
                         // registers v0 to vx
@@ -476,6 +486,8 @@ int main(int argc, char* argv[]) {
                         break;
                 }
             
+
+        }
 
         }
 
