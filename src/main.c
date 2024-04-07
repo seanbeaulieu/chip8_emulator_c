@@ -303,8 +303,8 @@ int main(int argc, char* argv[]) {
 
                 // extract x, y, and n
                 // modulo by 64 and 32 so position can wrap
-                uint8_t x = chip8.V[EXTRACT_X(opcode)];
-                uint8_t y = chip8.V[EXTRACT_Y(opcode)];
+                uint8_t x = chip8.V[EXTRACT_X(opcode)] % 64;
+                uint8_t y = chip8.V[EXTRACT_Y(opcode)] % 32;
                 uint8_t n = EXTRACT_N(opcode);
 
                 // set register vf to 0
@@ -320,7 +320,7 @@ int main(int argc, char* argv[]) {
                         // get the current screen pixel
                         // initialize as a pointer to the memory address of the coordinates of the screen given
                         // by the sprite starting position, offset by the row and column
-                        uint32_t* screen_pixel = &chip8.display[(y + row) % 32][(x + col) % 64];
+                        uint32_t* screen_pixel = &chip8.display[(y + row)][(x + col)];
 
                         // check to see if the sprite pixel is on
                         if ((sprite_byte & (0x80 >> col))) {
@@ -337,21 +337,21 @@ int main(int argc, char* argv[]) {
                         }
 
                         // hitting the right edge of the screen will stop drawing the current row
-                        /* 
+                        
                         if (x + col >= 64) {
                             break;
                         }
-                        */
+                        
                         
                     }
  
                     // printf("x: %d, after increment y: %d\n", x, y);
                     // reaching the bottom of the screen will stop
-                    /*
+                    
                     if (y + row >= 32) {
                         break;
                     }
-                    */
+                    
                 }
                 break;
             }
